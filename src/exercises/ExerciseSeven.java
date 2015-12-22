@@ -1,5 +1,7 @@
 package exercises;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
@@ -51,16 +53,109 @@ import java.util.StringTokenizer;
 public class ExerciseSeven {
 
     public static void main(String[] args) {
-        String data;        
+        Operation operation = null;
+        String data;
         Scanner scanner = new Scanner(System.in);
+        Map<String, Integer> values = new HashMap<String, Integer>();
+        int value = 0;
         do {
             data = scanner.nextLine();
             if (data.equals("eof")) {
                 break;
-            }            
+            }
+            operation = new Operation(data);
+            if ("NOT".equals(operation.getOperation())) {
+                if (isInteger(operation.getFirstOperator())) {
+                    // to make the complement operation first we nned to mask the value
+                    // example: if we need masking 4 bits, mask should be 00001111
+                    // the four 1 will mask the result of the complement
+                    // complement of 3 (00000111): 11111000
+                    // aplying the mask with and: 00001111 & 11111000 = 00001000
+                    int mask = (1 << 16) - 1;
+                    value = ~Integer.parseInt(operation.getFirstOperator()) & mask;
+                } else {
+                    int mask = (1 << 16) - 1;
+                    value = ~values.get(operation.getVariableName()) & mask;
+                }
+
+            } else if (isInteger(operation.getFirstOperator())) {
+                value = Integer.parseInt(operation.getFirstOperator());
+            } else {
+                value = values.get(operation.getVariableName());
+            }
+            values.put(operation.getVariableName(), value);
+            System.out.println(operation);
+            System.out.println("data: " + values);
         } while (true);
 
     }
+
+    public static boolean isInteger(String s) {
+        return isInteger(s, 10);
+    }
+
+    public static boolean isInteger(String s, int radix) {
+        if (s.isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < s.length(); i++) {
+            if (i == 0 && s.charAt(i) == '-') {
+                if (s.length() == 1) {
+                    return false;
+                } else {
+                    continue;
+                }
+            }
+            if (Character.digit(s.charAt(i), radix) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
-/*
- */
+
+class Operation {
+
+    private String variableName, operation = null, firstOperator = null, secondOperator = null;
+
+    public Operation(String op) {
+        StringTokenizer strToken = new StringTokenizer(op, "->");
+        String firstPart = strToken.nextToken();
+        variableName = strToken.nextToken().trim();
+        strToken = new StringTokenizer(firstPart, " ");
+        if (firstPart.contains("NOT")) {
+            operation = strToken.nextToken();
+            firstOperator = strToken.nextToken();
+        } else if (firstPart.contains("AND")
+                || firstPart.contains("OR")
+                || firstPart.contains("LSHIFT")
+                || firstPart.contains("RSHIFT")) {
+            firstOperator = strToken.nextToken();
+            operation = strToken.nextToken();
+            secondOperator = strToken.nextToken();
+        } else {
+            firstOperator = strToken.nextToken();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Operation{" + "variableName=" + variableName + ", operation=" + operation + ", operatorOne=" + firstOperator + ", operatorTwo=" + secondOperator + '}';
+    }
+
+    public String getVariableName() {
+        return variableName;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public String getFirstOperator() {
+        return firstOperator;
+    }
+
+    public String getSecondOperator() {
+        return secondOperator;
+    }
+}
