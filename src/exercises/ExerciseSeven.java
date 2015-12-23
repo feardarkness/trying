@@ -57,31 +57,79 @@ public class ExerciseSeven {
         String data;
         Scanner scanner = new Scanner(System.in);
         Map<String, Integer> values = new HashMap<String, Integer>();
-        int value = 0;
+        int value = 0, value1 = 0, value2 = 0;
+        int mask = (1 << 16) - 1;           // mask to operate on bitwise level
         do {
             data = scanner.nextLine();
             if (data.equals("eof")) {
                 break;
             }
             operation = new Operation(data);
+
             if ("NOT".equals(operation.getOperation())) {
                 if (isInteger(operation.getFirstOperator())) {
                     // to make the complement operation first we nned to mask the value
                     // example: if we need masking 4 bits, mask should be 00001111
                     // the four 1 will mask the result of the complement
                     // complement of 3 (00000111): 11111000
-                    // aplying the mask with and: 00001111 & 11111000 = 00001000
-                    int mask = (1 << 16) - 1;
+                    // aplying the mask with and: 00001111 & 11111000 = 00001000                    
                     value = ~Integer.parseInt(operation.getFirstOperator()) & mask;
                 } else {
-                    int mask = (1 << 16) - 1;
-                    value = ~values.get(operation.getVariableName()) & mask;
+                    value = ~values.get(operation.getFirstOperator()) & mask;
                 }
-
+                //value = ~value1 & mask;
+            } else if ("AND".equals(operation.getOperation())) {
+                if (isInteger(operation.getFirstOperator())) {
+                    value1 = Integer.parseInt(operation.getFirstOperator());
+                } else {
+                    value1 = values.get(operation.getFirstOperator());
+                }
+                if (isInteger(operation.getSecondOperator())) {
+                    value2 = Integer.parseInt(operation.getSecondOperator());
+                } else {
+                    value2 = values.get(operation.getSecondOperator());
+                }
+                value = (value1 & mask) & (value2 & mask);
+            } else if ("OR".equals(operation.getOperation())) {
+                if (isInteger(operation.getFirstOperator())) {
+                    value1 = Integer.parseInt(operation.getFirstOperator());
+                } else {
+                    value1 = values.get(operation.getFirstOperator());
+                }
+                if (isInteger(operation.getSecondOperator())) {
+                    value2 = Integer.parseInt(operation.getSecondOperator());
+                } else {
+                    value2 = values.get(operation.getSecondOperator());
+                }
+                value = (value1 | value2) & mask;
+            } else if ("LSHIFT".equals(operation.getOperation())) {
+                if (isInteger(operation.getFirstOperator())) {
+                    value1 = Integer.parseInt(operation.getFirstOperator());
+                } else {
+                    value1 = values.get(operation.getFirstOperator());
+                }
+                if (isInteger(operation.getSecondOperator())) {
+                    value2 = Integer.parseInt(operation.getSecondOperator());
+                } else {
+                    value2 = values.get(operation.getSecondOperator());
+                }
+                value = (value1 << value2) & mask;
+            } else if ("RSHIFT".equals(operation.getOperation())) {
+                if (isInteger(operation.getFirstOperator())) {
+                    value1 = Integer.parseInt(operation.getFirstOperator());
+                } else {
+                    value1 = values.get(operation.getFirstOperator());
+                }
+                if (isInteger(operation.getSecondOperator())) {
+                    value2 = Integer.parseInt(operation.getSecondOperator());
+                } else {
+                    value2 = values.get(operation.getSecondOperator());
+                }
+                value = (value1 >> value2) & mask;
             } else if (isInteger(operation.getFirstOperator())) {
                 value = Integer.parseInt(operation.getFirstOperator());
             } else {
-                value = values.get(operation.getVariableName());
+                value = values.get(operation.getFirstOperator());
             }
             values.put(operation.getVariableName(), value);
             System.out.println(operation);
